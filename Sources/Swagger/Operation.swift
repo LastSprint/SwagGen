@@ -13,7 +13,7 @@ public struct Operation {
 
     public var parameters: [PossibleReference<Parameter>] {
         return pathParameters.filter { pathParam in
-            !operationParameters.contains { $0.value.name == pathParam.value.name }
+            !operationParameters.contains { $0.possibleValue?.name == pathParam.possibleValue?.name }
         } + operationParameters
     }
 

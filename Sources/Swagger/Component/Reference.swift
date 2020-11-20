@@ -4,9 +4,9 @@ public class Reference<T: Component> {
 
     let string: String
 
-    private var _value: T?
+    public private(set) var possibleValue: T?
     public var value: T {
-        guard let value = _value else {
+        guard let value = possibleValue else {
             fatalError("Reference \(string) is unresolved")
         }
         return value
@@ -24,12 +24,16 @@ public class Reference<T: Component> {
         self.init(string)
     }
 
+    public var isValid: Bool {
+        return string.hasPrefix("#")
+    }
+
     public var component: ComponentObject<T> {
         return ComponentObject(name: name, value: value)
     }
 
     func resolve(with value: T) {
-        _value = value
+        possibleValue = value
     }
 
     func getReferenceComponent(index: Int) -> String? {
@@ -66,8 +70,15 @@ public enum PossibleReference<T: Component>: JSONObjectConvertible {
         return nil
     }
 
+    public var possibleValue: T? {
+        switch self {
+        case let .reference(reference): return reference.possibleValue
+        case let .value(value): return value
+        }
+    }
+
     public var swaggerObject: ComponentObject<T>? {
-        if case let .reference(reference) = self {
+        if case let .reference(reference) = self, reference.isValid {
             return reference.component
         }
         return nil

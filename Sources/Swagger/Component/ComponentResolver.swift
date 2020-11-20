@@ -10,6 +10,8 @@ class ComponentResolver {
 
     let spec: SwaggerSpec
 
+    private(set) var invalidReferences = [String]()
+
     var components: Components {
         return spec.components
     }
@@ -34,13 +36,19 @@ class ComponentResolver {
                 operation.responses.forEach(resolve)
                 if let requestBody = operation.requestBody {
                     resolveReference(requestBody, objects: components.requestBodies)
-                    resolve(requestBody.value.content)
+                    if let requestBodyValue = requestBody.possibleValue {
+                        resolve(requestBodyValue.content)
+                    }
                 }
             }
         }
     }
 
     private func resolveReference<T>(_ reference: Reference<T>, objects: [ComponentObject<T>]) {
+        guard reference.isValid else {
+            invalidReferences.append(reference.string)
+            return
+        }
         if reference.referenceType == T.componentType.rawValue,
             let name = reference.referenceName,
             let object = objects.first(where: { $0.name == name }) {
@@ -96,7 +104,9 @@ class ComponentResolver {
 
     private func resolve(_ reference: PossibleReference<Parameter>) {
         resolveReference(reference, objects: components.parameters)
-        resolve(reference.value)
+        if let referenceValue = reference.possibleValue {
+            resolve(referenceValue)
+        }
     }
 
     private func resolve(_ parameter: Parameter) {
@@ -109,10 +119,13 @@ class ComponentResolver {
 
     private func resolve(_ response: OperationResponse) {
         resolveReference(response.response, objects: components.responses)
-        if let content = response.response.value.content {
+        guard let responseValue = response.response.possibleValue else {
+            return
+        }
+        if let content = responseValue.content {
             resolve(content)
         }
-        for reference in response.response.value.headers.values {
+        for reference in responseValue.headers.values {
             resolveReference(reference, objects: components.headers)
         }
     }

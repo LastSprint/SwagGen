@@ -15,6 +15,8 @@ public struct SwaggerSpec {
 
     public let operations: [Operation]
 
+    public private(set) var invalidReferences = [String]()
+
     public var tags: [String] {
         let tags: [String] = operations.reduce([]) { $0 + $1.tags }
         let distinctTags = Set(tags)
@@ -108,5 +110,6 @@ extension SwaggerSpec: JSONObjectConvertible {
 
         let resolver = ComponentResolver(spec: self)
         resolver.resolve()
+        invalidReferences = resolver.invalidReferences
     }
 }

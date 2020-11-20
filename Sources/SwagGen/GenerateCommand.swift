@@ -118,6 +118,12 @@ class GenerateCommand: Command {
         }
     }
 
+    func errorOut(_ string: String) {
+        if !silent.value {
+            stderr <<< string
+        }
+    }
+
     func generate(specURL: URL, templatePath: PathKit.Path, destinationPath: PathKit.Path, clean: Generator.Clean, options: [String: Any]) {
 
         let spec: SwaggerSpec
@@ -142,10 +148,13 @@ class GenerateCommand: Command {
         )
         standardOut("Loaded spec: \"\(spec.info.title)\" - \(specCounts)")
 
-        //    let invalidReferences = Array(Set(spec.invalidReferences)).sorted()
-        //    for reference in invalidReferences {
-        //        writeError("Couldn't find reference: \(reference)")
-        //    }
+        let invalidReferences = Array(Set(spec.invalidReferences)).sorted()
+        guard invalidReferences.isEmpty else {
+            for reference in invalidReferences {
+                errorOut("Couldn't find reference: \(reference)")
+            }
+            exitWithError("Some references were not found")
+        }
 
         let templateConfig: TemplateConfig
         do {
