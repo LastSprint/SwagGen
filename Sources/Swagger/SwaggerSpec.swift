@@ -91,7 +91,7 @@ extension SwaggerSpec: JSONObjectConvertible {
             throw SwaggerError.invalidVersion(version)
         }
 
-        info = try jsonDictionary.json(atKeyPath: "info")
+        info = (try jsonDictionary.json(atKeyPath: "info")) ?? .init(title: "Title", version: "3.0.0", description: nil, termsOfService: nil, contact: nil, license: nil)
         servers = jsonDictionary.json(atKeyPath: "servers") ?? []
         securityRequirements = jsonDictionary.json(atKeyPath: "security")
         if jsonDictionary["components"] != nil {
