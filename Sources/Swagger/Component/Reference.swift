@@ -12,6 +12,10 @@ public class Reference<T: Component> {
         return value
     }
 
+    public var rawValue: String {
+        return self.string
+    }
+
     public let name: String
 
     public init(_ string: String) {
