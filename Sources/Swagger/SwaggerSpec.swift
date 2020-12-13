@@ -85,7 +85,7 @@ extension SwaggerSpec: JSONObjectConvertible {
         }
 
         json = jsonDictionary
-        version = try jsonDictionary.json(atKeyPath: "openapi")
+        version = (try? jsonDictionary.json(atKeyPath: "openapi")) ?? "3.0.0"
         let versionParts = version.components(separatedBy: ".")
         if Int(versionParts[0]) != 3 {
             throw SwaggerError.invalidVersion(version)
